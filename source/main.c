@@ -26,7 +26,7 @@ void initialize( dequeue * );
 
 // compact functions
 void eject( int *, int, int, int );
-void inject( int *, int, int );
+void inject( int *, int, int, int );
 
 // check functions
 int isEmptyDeque( dequeue * );
@@ -156,6 +156,8 @@ int main()
             if ( !isEmptyDeque( &deque ) )
             {
                 initialize( &deque );
+                // free now
+                showSucess(2);
             }
             else
             {
@@ -198,7 +200,7 @@ void insert( dequeue *deque, int value )
     // if value is less than value at the 0 index, inject 1 positions into array, insert into 0
     if ( value < deque->value[0] )
     {
-        inject( deque->value, 1, 0 );
+        inject( deque->value, 1, 0, (deque->indexLargest + 1) );
         deque->value[0] = value;
         deque->indexLargest = deque->indexLargest + 1;
         deque->empty = deque->empty - 1;
@@ -228,7 +230,7 @@ void insert( dequeue *deque, int value )
             }
         }
 
-        inject( deque->value, 1, insertInto );
+        inject( deque->value, 1, insertInto, (deque->indexLargest + 1) );
         deque->value[insertInto] = value;
         deque->indexLargest = deque->indexLargest + 1;
         deque->empty = deque->empty - 1;
@@ -309,13 +311,13 @@ void eject( int *array, int ejects, int begin, int end )
     return;
 }
 
-void inject( int *array, int injects, int begin )
+void inject( int *array, int injects, int begin, int end )
 {
     int i, j;
 
     for ( i = 0; i < injects; i++ )
     {
-        for ( j = (max - 1); j > begin; j-- )
+        for ( j = end; j > begin; j-- )
         {
             array[j] = array[j-1];
         }
@@ -370,7 +372,7 @@ int findItem( dequeue *deque, int query)
 {
     int i;
 
-    for ( i = 0; i < max; i++ )
+    for ( i = 0; i <= deque->indexLargest; i++ )
     {
         if ( deque->value[i] == query )
         {
