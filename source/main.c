@@ -25,7 +25,7 @@ void clean( dequeue *, int );
 void initialize( dequeue * );
 
 // compact functions
-void eject( int *, int, int );
+void eject( int *, int, int, int );
 void inject( int *, int, int );
 
 // check functions
@@ -264,9 +264,10 @@ void clean( dequeue *deque, int value )
             return;
         }
 
-        eject( deque->value, 1, item );
+        eject( deque->value, 1, deque->indexLargest, item );
         deque->indexLargest = deque->indexLargest - 1;
         deque->empty = deque->empty + 1;
+        deque->value[(deque->indexLargest + 1)] = -1;
         // removed
         showSucess(1);
         debug( deque );
@@ -294,13 +295,13 @@ void initialize( dequeue *deque )
 }
 
 // compact functions
-void eject( int *array, int ejects, int end )
+void eject( int *array, int ejects, int begin, int end )
 {
     int i, j;
 
     for ( i = 0; i < ejects; i++ )
     {
-        for ( j = end; j < ((max - 1) - i); j++ )
+        for ( j = end; j < (begin - i); j++ )
         {
             array[j] = array[j+1];
         }
