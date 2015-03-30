@@ -363,7 +363,10 @@ void showItens( int *array, int index )
     }
     for ( i = index; i < max; i++ )
     {
-        printf("\n%d - value: %d\n", i, array[i]);
+        if ( array[i] != -1 ) 
+        {
+            printf("\n%d - value: %d\n", i, array[i]);   
+        }
     }
     return;
 }
