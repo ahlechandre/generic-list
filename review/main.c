@@ -1,6 +1,6 @@
 /*
 * MIT License © 2015 Alexandre Thebaldi
-* github.com/ahlechandre
+* github.com/ahlechandre/deque/review
 */
 
 #include <stdio.h>
@@ -59,7 +59,7 @@ int main()
     do
     {
         // menu of options
-        printf("\n\n0 - exit | 1 - insert | 2 - show | 3 - remove | 4 - search | 5 - free queue | 6 - is all empty after \n\n");
+        printf("\n\n0 - exit | 1 - insert | 2 - show | 3 - remove | 4 - search | 5 - free deque\n\n");
         scanf("%d",&resp);
 
         switch ( resp )
@@ -170,31 +170,6 @@ int main()
             }
             break;
         }
-        case 6:
-        {
-            // compact
-            if ( !isEmptyDeque( &deque ) )
-            {
-                int query, itsEmpty;
-                printf("\nsome index: \n");
-                scanf("%d", &query);
-                itsEmpty = isAllEmptyAfter( &deque, query );
-                if ( itsEmpty )
-                {
-                    printf("\nit's all empty after %d\n", query);
-                }
-                else
-                {
-                    printf("\nisn't all empty after %d\n", query);
-                }
-            }
-            else
-            {
-                // stack is empty
-                showWarn(1);
-            }
-            break;
-        }
         }
         // "0" to exit
     } while ( resp != 0 );
@@ -268,7 +243,6 @@ void insert( dequeue *deque, int value )
 
     for ( i = 0; i < max; i++ )
     {
-        printf("\nwalking i = %d", i);
         if ( i < (max - 1) )
         {
             // first iteration
@@ -384,7 +358,7 @@ void clean( dequeue *deque, int value )
         deque->empty = deque->empty + 1;
         // removed
         showSucess(1);
-        debug( deque );
+//        debug( deque );
         return;
     }
     else
