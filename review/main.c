@@ -18,7 +18,8 @@ typedef struct Dequeue dequeue;
 int getValue();
 
 // insert functions
-void insert( dequeue *, int );
+void target( dequeue *, int );
+void insert( dequeue *, int, int );
 
 // remove functions
 void clean( dequeue *, int );
@@ -75,7 +76,7 @@ int main()
                     printf("\nselect value (value >= 0) to insert: ");
                     value = getValue();
                 } while ( value < 0 );
-                insert( &deque, value );
+                target( &deque, value );
             }
             else
             {
@@ -177,13 +178,12 @@ int main()
 }
 
 // insert functions
-void insert( dequeue *deque, int value )
+void target( dequeue *deque, int value )
 {
     // if deque it's empty
     if ( isEmptyDeque( deque ) )
     {
-        deque->value[0] = value;
-        deque->empty = deque->empty - 1;
+        insert( deque, 0, value );
         return;
     }
 
@@ -194,103 +194,85 @@ void insert( dequeue *deque, int value )
         return;
     }
 
-    // if deque has only one node
-    if ( deque->empty == (max - 1) )
-    {
-        int i, position;
-
-        // searching for the position of the only one node
-        for ( i = 0; i < max; i ++ )
-        {
-            if ( deque->value[i] != -1 )
-            {
-                position = i;
-                break;
-            }
-        }
-
-        if ( deque->value[position] > value )
-        {
-            if ( position == 0 )
-            {
-                deque->value[position + 1] = deque->value[position];
-                deque->value[position] = value;
-            }
-            else
-            {
-                deque->value[position - 1] = value;
-            }
-        }
-        else
-        {
-            if ( position == 0 )
-            {
-                deque->value[position + 1] = value;
-            }
-            else
-            {
-                deque->value[position - 1] = deque->value[position];
-                deque->value[position] = value;
-            }
-        }
-
-        deque->empty = deque->empty - 1;
-        return;
-    }
-
     // if has more than one node
-    int i;
+    int i, last;
 
     for ( i = 0; i < max; i++ )
     {
+        if ( deque->value[i] != -1 )
+        {
+            last = i;
+        }
+
         if ( value < deque->value[i] )
         {
             if ( deque->value[i - 1] == -1 )
             {
-                deque->value[i - 1] = value;
-                deque->empty = deque->empty - 1;
+                insert( deque, (i - 1), value );
                 return;
             }
 
+            int index, query;
+            query = deque->value[i];
+
             compact( deque );
-            inject( deque->value, 1, i, nextInvalidNode( deque->value, 0 ) );
-            deque->value[i] = value;
-            deque->empty = deque->empty - 1;
+
+            index = findItem( deque, query );
+
+            inject( deque->value, 1, index, nextInvalidNode( deque->value, 0 ) );
+
+            insert( deque, index, value );
+            return;
+        }
+    }
+
+    if ( last == (max - 1) )
+    {
+        if ( deque->value[last] > value )
+        {
+            int index;
+            index = max - (deque->empty + 1);
+
+            compact( deque );
+            inject( deque->value, 1, index, nextInvalidNode( deque->value, index ));
+
+            insert( deque, index, value );
             return;
         }
 
-    }
+        if ( deque->value[last] < value )
+        {
+            int index;
+            index = max - deque->empty;
 
+            compact( deque );
+
+            insert( deque, index, value );
+            return;
+        }
+    }
+    else
+    {
+        if ( deque->value[last] < value )
+        {
+            int index = last + 1;
+            insert( deque, index, value );
+            return;
+        }
+    }
     if ( deque->value[i] == -1 )
     {
-        deque->value[i] = value;
-        deque->empty = deque->empty - 1;
+        insert( deque, i, value );
         return;
     }
 
-    if ( deque->value[i] > value )
-    {
-        int index;
-        index = max - (deque->empty + 1);
+}
 
-        compact( deque );
-        inject( deque->value, 1, index, nextInvalidNode( deque->value, index ));
-        deque->value[index] = value;
-        deque->empty = deque->empty - 1;
-        return;
-    }
-
-    if ( deque->value[i] < value )
-    {
-        int index;
-        index = max - deque->empty;
-
-        compact( deque );
-
-        deque->value[index] = value;
-        deque->empty = deque->empty - 1;
-        return;
-    }
+void insert( dequeue *deque, int index, int value )
+{
+    deque->value[index] = value;
+    deque->empty = deque->empty - 1;
+    return;
 }
 
 // remove functions
@@ -447,7 +429,7 @@ int isAllEmptyAfter( dequeue *deque, int index )
         return;
     }
 
-    return ( deque->empty + index == (max - 1) );
+    return ( deque->empty + index == max );
 
 }
 
