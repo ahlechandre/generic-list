@@ -34,9 +34,7 @@ void compact( dequeue * );
 int isEmptyDeque( dequeue * );
 int isFullDeque( dequeue * );
 int hasEqual( dequeue *, int );
-int nextValidNode( int *, int );
 int nextInvalidNode( int *, int );
-int isAllEmptyAfter( dequeue *, int );
 
 // search functions
 void showItens( int *, int );
@@ -60,7 +58,7 @@ int main()
     do
     {
         // menu of options
-        printf("\n\n0 - exit | 1 - insert | 2 - show | 3 - remove | 4 - search | 5 - free deque\n\n");
+        printf("\n\n0 - exit | 1 - insert | 2 - show | 3 - remove | 4 - free deque\n\n");
         scanf("%d",&resp);
 
         switch ( resp )
@@ -122,41 +120,6 @@ int main()
         }
         case 4:
         {
-            // search
-            if ( !isEmptyDeque( &deque ) )
-            {
-
-                int item, query;
-
-                do
-                {
-                    printf("\nvalue (>=0) to find at the deque: ");
-                    query = getValue();
-                } while ( query < 0 );
-
-                item = findItem( &deque, query );
-
-                if ( item != -1 )
-                {
-                    printf("\nresult:\n");
-                    printf("\n%d - value: %d\n", item, deque.value[item]);
-                }
-                else
-                {
-                    // not found
-                    showWarn(2);
-                }
-            }
-            else
-            {
-                // deque is empty
-                showWarn(1);
-            }
-            break;
-        }
-
-        case 5:
-        {
             // free all nodes
             if ( !isEmptyDeque( &deque ) )
             {
@@ -180,7 +143,6 @@ int main()
 // insert functions
 void target( dequeue *deque, int value )
 {
-    // if deque it's empty
     if ( isEmptyDeque( deque ) )
     {
         insert( deque, 0, value );
@@ -194,18 +156,20 @@ void target( dequeue *deque, int value )
         return;
     }
 
-    // if has more than one node
     int i, last;
 
     for ( i = 0; i < max; i++ )
     {
+        // recording last valid value
         if ( deque->value[i] != -1 )
         {
             last = i;
         }
 
+        // searching first heigher value
         if ( value < deque->value[i] )
         {
+            // case previous value is -1 just overwrite
             if ( deque->value[i - 1] == -1 )
             {
                 insert( deque, (i - 1), value );
@@ -213,59 +177,67 @@ void target( dequeue *deque, int value )
             }
 
             int index, query;
+
+            // recording value to search after
             query = deque->value[i];
 
             compact( deque );
 
+            // looking for value in the new position
             index = findItem( deque, query );
 
-            inject( deque->value, 1, index, nextInvalidNode( deque->value, 0 ) );
+            inject( deque->value, 1, index, nextInvalidNode( deque->value, index ) );
 
             insert( deque, index, value );
+
             return;
         }
     }
-
+    // if the last valid value is in the last position of the deque
     if ( last == (max - 1) )
     {
-        if ( deque->value[last] > value )
+        // case value is less than the last
+        if ( value < deque->value[last] )
         {
             int index;
+
             index = max - (deque->empty + 1);
 
             compact( deque );
+
             inject( deque->value, 1, index, nextInvalidNode( deque->value, index ));
 
             insert( deque, index, value );
+
             return;
         }
 
-        if ( deque->value[last] < value )
+        // case value is greater than the last
+        if ( value > deque->value[last] )
         {
             int index;
+
             index = max - deque->empty;
 
             compact( deque );
 
             insert( deque, index, value );
+
             return;
         }
     }
+    // if the last valid value isn't in the last position of the deque
     else
     {
-        if ( deque->value[last] < value )
-        {
-            int index = last + 1;
-            insert( deque, index, value );
-            return;
-        }
-    }
-    if ( deque->value[i] == -1 )
-    {
-        insert( deque, i, value );
+        // verify if value is greater than the last valid value
+        int index;
+
+        index = last + 1;
+
+        insert( deque, index, value );
+
         return;
     }
-
 }
 
 void insert( dequeue *deque, int index, int value )
@@ -385,24 +357,6 @@ int hasEqual( dequeue *deque, int query )
     return flag;
 }
 
-int nextValidNode( int *array, int index )
-{
-    if ( (index < 0) || (index >= max) )
-    {
-        showWarn(2);
-        return;
-    }
-
-    int i = index + 1;
-
-    while ( array[i] == -1)
-    {
-        i++;
-    }
-
-    return i;
-}
-
 int nextInvalidNode( int *array, int index )
 {
     if ( (index < 0) || (index >= max) )
@@ -421,18 +375,6 @@ int nextInvalidNode( int *array, int index )
     return i;
 }
 
-int isAllEmptyAfter( dequeue *deque, int index )
-{
-    if ( (index < 0) || (index >= max) )
-    {
-        showWarn(2);
-        return;
-    }
-
-    return ( deque->empty + index == max );
-
-}
-
 // search functions
 void showItens( int *array, int index )
 {
@@ -444,7 +386,10 @@ void showItens( int *array, int index )
     }
     for ( i = index; i < max; i++ )
     {
-        printf("\n%d - value: %d\n", i, array[i]);
+        if ( array[i] != -1 )
+        {
+            printf("\n%d - value: %d\n", i, array[i]);
+        }
     }
     return;
 }
