@@ -243,108 +243,54 @@ void insert( dequeue *deque, int value )
 
     for ( i = 0; i < max; i++ )
     {
-        if ( i < (max - 1) )
+        if ( value < deque->value[i] )
         {
-            // first iteration
-            if ( i == 0 )
+            if ( deque->value[i - 1] == -1 )
             {
-                if ( deque->value[i] == -1 )
-                {
-                    int nextValid;
-
-                    nextValid = nextValidNode( deque->value, i );
-
-                    if ( value < deque->value[nextValid] )
-                    {
-                        deque->value[nextValid - 1] = value;
-                        deque->empty = deque->empty - 1;
-                        return;
-                    }
-                    else
-                    {
-                        i = nextValid;
-                    }
-                }
-            }
-
-            if ( value > deque->value[i] )
-            {
-                if ( deque->value[i + 1] != -1 )
-                {
-                    if ( value < deque->value[i + 1] )
-                    {
-                        int nextInvalid;
-
-                        compact( deque );
-
-                        nextInvalid = nextInvalidNode( deque->value, 0 );
-
-                        inject( deque->value, 1, (i + 1), nextInvalid );
-
-                        deque->value[i + 1] = value;
-                        deque->empty = deque->empty - 1;
-                        return;
-                    }
-                }
-                else
-                {
-                    if ( isAllEmptyAfter( deque, i ) )
-                    {
-                        deque->value[i + 1] = value;
-                        deque->empty = deque->empty - 1;
-                        return;
-                    }
-                    else
-                    {
-                        int nextValid;
-
-                        nextValid = nextValidNode( deque->value, i );
-
-                        if ( value < deque->value[nextValid] )
-                        {
-                            deque->value[nextValid - 1] = value;
-                            deque->empty = deque->empty - 1;
-                            return;
-                        }
-                        else
-                        {
-                            i = nextValid;
-                        }
-                    }
-                }
-
-            }
-            else
-            {
-                int nextInvalid;
-
-                compact( deque );
-
-                nextInvalid = nextInvalidNode( deque->value, 0 );
-
-                inject( deque->value, 1, i, nextInvalid );
-
-                deque->value[i] = value;
+                deque->value[i - 1] = value;
                 deque->empty = deque->empty - 1;
                 return;
-
             }
 
-        }
-        else
-        {
-            int index;
-
             compact( deque );
-
-            index = max - deque->empty;
-
-            deque->value[index] = value;
+            inject( deque->value, 1, i, nextInvalidNode( deque->value, 0 ) );
+            deque->value[i] = value;
             deque->empty = deque->empty - 1;
             return;
         }
+
     }
 
+    if ( deque->value[i] == -1 )
+    {
+        deque->value[i] = value;
+        deque->empty = deque->empty - 1;
+        return;
+    }
+
+    if ( deque->value[i] > value )
+    {
+        int index;
+        index = max - (deque->empty + 1);
+
+        compact( deque );
+        inject( deque->value, 1, index, nextInvalidNode( deque->value, index ));
+        deque->value[index] = value;
+        deque->empty = deque->empty - 1;
+        return;
+    }
+
+    if ( deque->value[i] < value )
+    {
+        int index;
+        index = max - deque->empty;
+
+        compact( deque );
+
+        deque->value[index] = value;
+        deque->empty = deque->empty - 1;
+        return;
+    }
 }
 
 // remove functions
