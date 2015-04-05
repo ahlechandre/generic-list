@@ -33,7 +33,7 @@ void compact( dequeue * );
 int isEmptyDeque( dequeue * );
 int isFullDeque( dequeue * );
 int hasEqual( dequeue *, int );
-int nextInvalidNode( int *, int );
+int nextEmptyNode( int *, int );
 
 // search functions
 void showItens( int *, int );
@@ -185,7 +185,7 @@ void target( dequeue *deque, int value )
             // looking for value in the new position
             index = findItem( deque, query );
 
-            inject( deque->value, 1, index, nextInvalidNode( deque->value, index ) );
+            inject( deque->value, 1, index, nextEmptyNode( deque->value, index ) );
 
             insert( deque, index, value );
 
@@ -204,7 +204,7 @@ void target( dequeue *deque, int value )
 
             compact( deque );
 
-            inject( deque->value, 1, index, nextInvalidNode( deque->value, index ));
+            inject( deque->value, 1, index, nextEmptyNode( deque->value, index ));
 
             insert( deque, index, value );
 
@@ -342,7 +342,7 @@ int hasEqual( dequeue *deque, int query )
     return flag;
 }
 
-int nextInvalidNode( int *array, int index )
+int nextEmptyNode( int *array, int index )
 {
     if ( (index < 0) || (index >= max) )
     {
