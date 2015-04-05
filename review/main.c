@@ -26,7 +26,6 @@ void clean( dequeue *, int );
 void initialize( dequeue * );
 
 // compact functions
-void eject( int *, int, int, int );
 void inject( int *, int, int, int );
 void compact( dequeue * );
 
@@ -283,20 +282,6 @@ void initialize( dequeue *deque )
 }
 
 // compact functions
-void eject( int *array, int ejects, int begin, int end )
-{
-    int i, j;
-
-    for ( i = 0; i < ejects; i++ )
-    {
-        for ( j = end; j < (begin - i); j++ )
-        {
-            array[j] = array[j+1];
-        }
-    }
-    return;
-}
-
 void inject( int *array, int injects, int begin, int end )
 {
     int i, j;
