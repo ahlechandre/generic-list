@@ -1,61 +1,62 @@
 /*
 * MIT License © 2015 Alexandre Thebaldi
-* github.com/ahlechandre
+* github.com/ahlechandre/list/review
 */
 
 #include <stdio.h>
 
 #define max 10
 
-struct Dequeue
+struct genericList
 {
-    int value[max], empty, indexLargest;
+    int value[max], empty;
 };
 
-typedef struct Dequeue dequeue;
+typedef struct genericList List;
 
 // get functions
 int getValue();
 
 // insert functions
-void insert( dequeue *, int );
+void target( List *, int );
+void insert( List *, int, int );
 
 // remove functions
-void clean( dequeue *, int );
-void initialize( dequeue * );
+void clean( List *, int );
+void initialize( List * );
 
 // compact functions
-void eject( int *, int, int, int );
 void inject( int *, int, int, int );
+void compact( List * );
 
 // check functions
-int isEmptyDeque( dequeue * );
-int isFullDeque( dequeue * );
-int hasEqual( dequeue *, int );
+int isEmptyDeque( List * );
+int isFullDeque( List * );
+int hasEqual( List *, int );
+int nextEmptyNode( int *, int );
 
 // search functions
 void showItens( int *, int );
-int findItem( dequeue *, int );
+int findItem( List *, int );
 
 // message functions
 void showWarn( int );
-void showErr( int );
 void showSucess( int );
 
 // debug functions
-void debug( dequeue * );
+void debug( List * );
 
 int main()
 {
     int resp;
 
-    dequeue deque;
-    initialize( &deque );
+    List list;
+    initialize( &list );
 
     do
     {
         // menu of options
-        printf("\n\n0 - exit | 1 - insert | 2 - show | 3 - remove | 4 - search | 5 - free queue \n\n");
+        printf("\n\n0 - exit | 1 - insert | 2 - show | 3 - remove | 4 - free list\n\n");
         scanf("%d",&resp);
 
         switch ( resp )
@@ -63,7 +64,7 @@ int main()
         case 1:
         {
             // insert
-            if ( !isFullDeque( &deque ) )
+            if ( !isFullDeque( &list ) )
             {
                 int value;
                 do
@@ -71,11 +72,11 @@ int main()
                     printf("\nselect value (value >= 0) to insert: ");
                     value = getValue();
                 } while ( value < 0 );
-                insert( &deque, value );
+                target( &list, value );
             }
             else
             {
-                // deque is full
+                // list is full
                 showWarn(0);
             }
             break;
@@ -83,13 +84,13 @@ int main()
         case 2:
         {
             // show
-            if ( !isEmptyDeque( &deque ) )
+            if ( !isEmptyDeque( &list ) )
             {
-                showItens( &deque.value, 0 );
+                showItens( &list.value, 0 );
             }
             else
             {
-                // deque is empty
+                // list is empty
                 showWarn(1);
             }
             break;
@@ -97,7 +98,7 @@ int main()
         case 3:
         {
             // remove
-            if ( !isEmptyDeque( &deque ) )
+            if ( !isEmptyDeque( &list ) )
             {
                 int value;
                 do
@@ -106,7 +107,7 @@ int main()
                     value = getValue();
                 } while ( value < 0 );
 
-                clean( &deque, value );
+                clean( &list, value );
             }
             else
             {
@@ -117,45 +118,10 @@ int main()
         }
         case 4:
         {
-            // search
-            if ( !isEmptyDeque( &deque ) )
-            {
-
-                int item, query;
-
-                do
-                {
-                    printf("\nvalue (>=0) to find at the deque: ");
-                    query = getValue();
-                } while ( query < 0 );
-
-                item = findItem( &deque, query );
-
-                if ( item != -1 )
-                {
-                    printf("\nresult:\n");
-                    printf("\n%d - value: %d\n", item, deque.value[item]);
-                }
-                else
-                {
-                    // not found
-                    showWarn(2);
-                }
-            }
-            else
-            {
-                // deque is empty
-                showWarn(1);
-            }
-            break;
-        }
-
-        case 5:
-        {
             // free all nodes
-            if ( !isEmptyDeque( &deque ) )
+            if ( !isEmptyDeque( &list ) )
             {
-                initialize( &deque );
+                initialize( &list );
                 // free now
                 showSucess(2);
             }
@@ -173,106 +139,103 @@ int main()
 }
 
 // insert functions
-void insert( dequeue *deque, int value )
+void target( List *list, int value )
 {
-    // if empty deque, insert into 0 index
-    if ( isEmptyDeque( deque ) )
+    if ( isEmptyDeque( list ) )
     {
-        deque->value[0] = value;
-        deque->indexLargest = 0;
-        deque->empty = deque->empty - 1;
+        insert( list, 0, value );
         // added
         showSucess(0);
-        debug( deque );
-        return;
-    }
-    // if value is major that major in array, insert at the major + 1
-    if ( value > deque->value[deque->indexLargest] )
-    {
-        deque->value[deque->indexLargest + 1] = value;
-        deque->indexLargest = deque->indexLargest + 1;
-        deque->empty = deque->empty - 1;
-        // added
-        showSucess(0);
-        debug( deque );
-        return;
-    }
-    // if value is less than value at the 0 index, inject 1 positions into array, insert into 0
-    if ( value < deque->value[0] )
-    {
-        inject( deque->value, 1, 0, (deque->indexLargest + 1) );
-        deque->value[0] = value;
-        deque->indexLargest = deque->indexLargest + 1;
-        deque->empty = deque->empty - 1;
-        // added
-        showSucess(0);
-        debug( deque );
         return;
     }
 
-    // if value is equal some node, do nothing
-    if ( hasEqual( deque, value ) == 1 )
+    if ( hasEqual( list, value ) )
     {
         // node already exists
         showWarn(3);
         return;
     }
-    else
-    {
-        int i, insertInto;
 
-        for ( i = 0; i < deque->indexLargest; i++ )
+    int i, last;
+
+    for ( i = 0; i < max; i++ )
+    {
+        // recording last valid value
+        if ( list->value[i] != -1 )
         {
-            if ( value > deque->value[i] && value < deque->value[i + 1] )
-            {
-                insertInto = i + 1;
-                break;
-            }
+            last = i;
         }
 
-        inject( deque->value, 1, insertInto, (deque->indexLargest + 1) );
-        deque->value[insertInto] = value;
-        deque->indexLargest = deque->indexLargest + 1;
-        deque->empty = deque->empty - 1;
-        // added
-        showSucess(0);
-        debug( deque );
-        return;
+        // searching first heigher value
+        if ( value < list->value[i] )
+        {
+            // case previous value is -1 just overwrite
+            if ( list->value[i - 1] == -1 )
+            {
+                insert( list, (i - 1), value );
+                // added
+                showSucess(0);
+                return;
+            }
 
+            int index, query;
+
+            // recording value to search after
+            query = list->value[i];
+
+            compact( list );
+
+            // looking for value in the new position
+            index = findItem( list, query );
+
+            inject( list->value, 1, index, nextEmptyNode( list->value, index ) );
+
+            insert( list, index, value );
+            // added
+            showSucess(0);
+            return;
+        }
     }
+
+    int index;
+
+    // if the last valid value is in the last position of the list
+    if ( last == (max - 1) )
+    {
+        compact( list );
+        index = max - list->empty;
+    }
+    else
+    {
+        index = last + 1;
+    }
+
+    insert( list, index, value );
+    // added
+    showSucess(0);
+    return;
+
+}
+
+void insert( List *list, int index, int value )
+{
+    list->value[index] = value;
+    list->empty = list->empty - 1;
+    return;
 }
 
 // remove functions
-void clean( dequeue *deque, int value )
+void clean( List *list, int value )
 {
-    int item = findItem( deque, value );
+    int item = findItem( list, value );
 
     if ( item != -1 )
     {
-        // in the fallowing cases just overwrite index value by -1
-        if ( deque->indexLargest == 0 || item == deque->indexLargest )
-        {
-            deque->value[item] = -1;
-
-            if ( item == deque->indexLargest )
-            {
-                deque->indexLargest = deque->indexLargest - 1;
-            }
-
-            deque->empty = deque->empty + 1;
-            // removed
-            showSucess(1);
-            debug( deque );
-            return;
-        }
-
-        eject( deque->value, 1, deque->indexLargest, item );
-        deque->indexLargest = deque->indexLargest - 1;
-        deque->empty = deque->empty + 1;
-        deque->value[(deque->indexLargest + 1)] = -1;
+        list->value[item] = -1;
+        list->empty = list->empty + 1;
         // removed
         showSucess(1);
-        debug( deque );
+//        debug( list );
         return;
     }
     else
@@ -284,33 +247,19 @@ void clean( dequeue *deque, int value )
 }
 
 // remove functions
-void initialize( dequeue *deque )
+void initialize( List *list )
 {
     int i;
     for ( i = 0; i < max; i++ )
     {
-        deque->value[i] = -1;
+        list->value[i] = -1;
     }
     // all is empty now
-    deque->empty = max;
+    list->empty = max;
     return;
 }
 
 // compact functions
-void eject( int *array, int ejects, int begin, int end )
-{
-    int i, j;
-
-    for ( i = 0; i < ejects; i++ )
-    {
-        for ( j = end; j < (begin - i); j++ )
-        {
-            array[j] = array[j+1];
-        }
-    }
-    return;
-}
-
 void inject( int *array, int injects, int begin, int end )
 {
     int i, j;
@@ -321,28 +270,48 @@ void inject( int *array, int injects, int begin, int end )
         {
             array[j] = array[j-1];
         }
+        begin++;
     }
     return;
 }
 
+void compact ( List *list )
+{
+    int i, j = 0;
+
+    for ( i = 0; i < max; i++ )
+    {
+        if ( list->value[i] != -1 )
+        {
+            list->value[j] = list->value[i];
+            j++;
+        }
+    }
+
+    for ( i = (max - list->empty); i < max; i++  )
+    {
+        list->value[i] = -1;
+    }
+}
+
 // check functions
-int isEmptyDeque( dequeue *deque )
+int isEmptyDeque( List *list )
 {
-    return ( deque->empty == max );
+    return ( list->empty == max );
 }
 
-int isFullDeque( dequeue *deque )
+int isFullDeque( List *list )
 {
-    return ( deque->empty == 0 );
+    return ( list->empty == 0 );
 }
 
-int hasEqual( dequeue *deque, int query )
+int hasEqual( List *list, int query )
 {
     int i, flag = 0;
 
-    for ( i = 0; i <= deque->indexLargest; i++ )
+    for ( i = 0; i < max; i++ )
     {
-        if ( deque->value[i] == query )
+        if ( list->value[i] == query )
         {
             flag = 1;
             break;
@@ -352,32 +321,41 @@ int hasEqual( dequeue *deque, int query )
     return flag;
 }
 
+int nextEmptyNode( int *array, int index )
+{
+    int i = index + 1;
+
+    while ( array[i] != -1 )
+    {
+        i++;
+    }
+
+    return i;
+}
+
 // search functions
 void showItens( int *array, int index )
 {
-    int i;
+    int i, j = 0;
 
-    if ( index >= max ) {
-        showErr(0);
-        return;
-    }
     for ( i = index; i < max; i++ )
     {
-        if ( array[i] != -1 ) 
+        if ( array[i] != -1 )
         {
-            printf("\n%d - value: %d\n", i, array[i]);   
+            j++;
+            printf("\n%d - value: %d\n", j, array[i]);
         }
     }
     return;
 }
 
-int findItem( dequeue *deque, int query)
+int findItem( List *list, int query)
 {
     int i;
 
-    for ( i = 0; i <= deque->indexLargest; i++ )
+    for ( i = 0; i < max; i++ )
     {
-        if ( deque->value[i] == query )
+        if ( list->value[i] == query )
         {
             return i;
         }
@@ -400,12 +378,12 @@ void showWarn( int id )
     {
     case 0:
     {
-        printf("\nHey! The deque is full.\n");
+        printf("\nHey! The list is full.\n");
         break;
     }
     case 1:
     {
-        printf("\nOps, the deque is empty!\n");
+        printf("\nOps, the list is empty!\n");
         break;
     }
     case 2:
@@ -421,31 +399,6 @@ void showWarn( int id )
     }
     return;
 }
-
-void showErr( int id )
-{
-    switch ( id )
-    {
-    case 0:
-    {
-        printf("\nOhhh! fatal error.\n");
-        system("exit");
-        break;
-    }
-    case 1:
-    {
-        //            printf("\nGood! Node removed with successfully!\n");
-        break;
-    }
-    case 2:
-    {
-        //            printf("\nHahaha! The stack it is free now!\n");
-        break;
-    }
-    }
-    return;
-}
-
 
 void showSucess( int id )
 {
@@ -463,7 +416,7 @@ void showSucess( int id )
     }
     case 2:
     {
-        printf("\nHahaha! The deque it is free now!\n");
+        printf("\nHahaha! The list it is free now!\n");
         break;
     }
     }
@@ -471,13 +424,11 @@ void showSucess( int id )
 }
 
 // debug functions
-void debug( dequeue *deque )
+void debug( List *list )
 {
     printf("\n============ DEBUG ===========\n");
-    printf("\nempty = %d\n", deque->empty);
-    printf("\nindexLargest = %d\n", deque->indexLargest);
+    printf("\nempty = %d\n", list->empty);
     printf("\n============ END DEBUG ===========\n");
 
     return;
 }
-
