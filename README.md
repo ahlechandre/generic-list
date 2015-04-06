@@ -1,4 +1,4 @@
-# Static deque in c
+# Generic list (static) in C
 
 ## Premise
 > Create a static deck with 10 positions in whom the elements are inserted ordered increasingly. The list will be compacted only if necessary (only the necessary parts). The removal will finding the value sought by the user. The empty positions will be found with -1. The User can only enter worth more than 0.
