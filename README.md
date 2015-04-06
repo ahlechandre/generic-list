@@ -7,49 +7,45 @@
 ```c
 #define max 10
 
-struct Dequeue
+struct genericList
 {
-    int value[max], empty, indexLargest;
+    int value[max], empty;
 };
 
-typedef struct Dequeue dequeue;
+typedef struct genericList List;
+
 ```
 #### Declaration
 
 ```c
   // example
-  dequeue deque;
+  List list;
 ```
-![Deque structure](https://github.com/ahlechandre/deque/blob/master/img/deque.png);
-
 ## Core functions
 
 ```c 
- initialize( dequeue * ); 
- insert( dequeue *, int );
- clean( dequeue *, int );
+ void initialize( List * ); 
+ void target( List *, int );
+ void clean( List *, int );
  ```
-### initialize( *deque );
+### initialize( *list );
 ```c
   // initialize the structure before any other operation
-  initialize( &deque  );
+  initialize( &list  );
 ``` 
-![Deque structure](https://github.com/ahlechandre/deque/blob/master/img/initialize.png);
 
-### insert( dequeue *deque, int value );
+### target( List *list, int value );
 ```c
   // insert function call example
   int value = 17;
-  insert( &deque, value );
+  target( &list, value );
 ``` 
-![Deque structure](https://github.com/ahlechandre/deque/blob/master/img/insert.png);
-### clean( dequeue *deque, int value );
+### clean( List *list, int value );
 ```c
   // clean function call example
   int value = 7;
-  clean( &deque, value );
+  clean( &list, value );
 ``` 
-![Deque structure](https://github.com/ahlechandre/deque/blob/master/img/clean.png);
 
 ## License
 
